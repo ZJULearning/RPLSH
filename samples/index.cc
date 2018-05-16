@@ -27,7 +27,7 @@ void load_data(char* filename, float*& data, size_t& num,int& dim){// load data 
 
 
 int main(int argc, char** argv){
-  if(argc!=4){cout<< argv[0] << " data_file index_file tableNum)" <<endl; exit(-1);}
+  if(argc!=6){cout<< argv[0] << " data_file index_file nCluster nIter tableNum " <<endl; exit(-1);}
 
   float* data_load = NULL;
   size_t points_num;
@@ -35,11 +35,14 @@ int main(int argc, char** argv){
   load_data(argv[1], data_load, points_num,dim);
   Matrix<float> dataset(points_num,dim,data_load);
 
-  int table = atoi(argv[3]);
+  int nCluster = atoi(argv[3]);
+  int nIter = atoi(argv[4]);
+
+  int table = atoi(argv[5]);
   if (table < 0 || table*32 > 100000){cout<<"tableNum error!";exit(-1);}
 
 
-  FIndex<float> index(dataset, new L2DistanceAVX<float>(), efanna::HAMMINGIndexParams(table));
+  FIndex<float> index(dataset, new L2DistanceAVX<float>(), efanna::HAMMINGIndexParams(nCluster, nIter, table));
 
   auto s = std::chrono::high_resolution_clock::now();
 

@@ -19,12 +19,14 @@ namespace efanna {
   struct IndexParams{
     init_algorithm init_index_type;
     unsigned index_tables=32;
+    unsigned nGroup=1000;
+    unsigned nIter=100;
     ExtraParamsMap extra_params;
   };
 
   struct SearchParams{
     unsigned search_init_num;
-    unsigned search_tables;
+    unsigned search_groups;
   };
 
 }

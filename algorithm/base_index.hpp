@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 
+
 namespace efanna{
 
 template <typename DataType>
@@ -44,8 +45,8 @@ public:
 		out.close();
 	}
 	SearchParams SP;
-	void setSearchParams(int tables, int init_num){
-		SP.search_tables = tables;
+	void setSearchParams(int nGroup, int init_num){
+		SP.search_groups = nGroup;
 		SP.search_init_num = init_num;
 	}
 

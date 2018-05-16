@@ -24,7 +24,7 @@ void load_data(char* filename, float*& data, size_t& num,int& dim){// load data 
   in.close();
 }
 int main(int argc, char** argv){
-  if(argc!=8){cout<< argv[0] << " index_file data_file query_file result_file table initsz querNN )" <<endl; exit(-1);}
+  if(argc!=8){cout<< argv[0] << " index_file data_file query_file result_file nGroup initsz querNN" <<endl; exit(-1);}
 
   float* data_load = NULL;
   float* query_load = NULL;
@@ -37,23 +37,25 @@ int main(int argc, char** argv){
   Matrix<float> dataset(points_num,dim,data_load);
   Matrix<float> query(q_num,qdim,query_load);
 
-  FIndex<float> index(dataset, new L2DistanceAVX<float>(), efanna::HAMMINGIndexParams(32));
+  FIndex<float> index(dataset, new L2DistanceAVX<float>(), efanna::HAMMINGIndexParams(1000,100,32));
+
   index.loadIndex(argv[1]);
 
-
-  int table = atoi(argv[5]);
+  int nGroup = atoi(argv[5]);
   int poolsz = atoi(argv[6]);
-  index.setSearchParams(table, poolsz);
+  index.setSearchParams(nGroup, poolsz);
+
 
   auto s = std::chrono::high_resolution_clock::now();
 
-  index.knnSearch(atoi(argv[7])/*query nn*/,query,query_load);
+  index.knnSearch(atoi(argv[7]),query,query_load);
 
   auto e = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> diff = e-s;
   std::cout << "query searching time: " << diff.count() << "\n";
 
   index.saveResults(argv[4]);
+
 
   return 0;
 }

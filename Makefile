@@ -1,5 +1,5 @@
 GXX=g++ -std=c++11
-OPTM=-O3 -march=native
+OPTM=-O3 -march=native -fopenmp
 CPFLAGS=$(OPTM) -Wall
 LDFLAGS=$(OPTM) -Wall -lopenblas
 
