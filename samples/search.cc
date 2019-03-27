@@ -5,24 +5,33 @@
 
 using namespace efanna;
 using namespace std;
+
 void load_data(char* filename, float*& data, size_t& num,int& dim){// load data with sift10K pattern
   ifstream in(filename, ios::binary);
   if(!in.is_open()){cout<<"open file error"<<endl;exit(-1);}
   in.read((char*)&dim,4);
   cout<<"data dimension: "<<dim<<endl;
+
   in.seekg(0,ios::end);
   ios::pos_type ss = in.tellg();
   size_t fsize = (size_t)ss;
   num = fsize / (dim+1) / 4;
-  data = new float[num*dim];
+
+  int align_dim = (dim + 7)/8*8;
+  cout<<"data aligned dimension: "<<align_dim<<endl;
+
+  data = new float[num*align_dim]();
 
   in.seekg(0,ios::beg);
   for(size_t i = 0; i < num; i++){
     in.seekg(4,ios::cur);
-    in.read((char*)(data+i*dim),dim*4);
+    in.read((char*)(data+i*align_dim),dim*4);
   }
   in.close();
+
+  dim = align_dim;
 }
+
 int main(int argc, char** argv){
   if(argc!=8){cout<< argv[0] << " index_file data_file query_file result_file nGroup initsz querNN" <<endl; exit(-1);}
 
