@@ -1,4 +1,4 @@
-Random Projection based Locality Sensitive Hashing 
+Kmeans Quantization + Random Projection based Locality Sensitive Hashing 
 ============
 We provide here the codes for Kmeans Quantization + Random Projection based Locality Sensive Hashing (RPLSH). The LSH algorithm is formally described in [1] and the matlab version can be found at [here](https://github.com/ZJULearning/MatlabFunc/tree/master/ANNS/Hashing)
 
