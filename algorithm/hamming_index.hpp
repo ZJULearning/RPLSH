@@ -325,7 +325,7 @@ public:
 
 	}
 
-	void kmeansPartitionImpl(unsigned nCluster,const Matrix<DataType> fea, std::vector<std::vector<float>> cent){
+	/*void kmeansPartitionImpl(const Matrix<DataType>& fea, std::vector<std::vector<float>>& cent, unsigned nIter){
 
 		unsigned nSmp = features.get_rows();
 		unsigned mFea = features.get_cols();
@@ -446,9 +446,7 @@ public:
 
 		std::cout<<"Converged: "<<converged<<std::endl;
 
-
-
-	}
+	}*/
 
 	void buildIndexImpl(float* data, size_t points_num, int dim){
 		int codelen = params_.index_tables *32;
