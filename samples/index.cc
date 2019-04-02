@@ -50,7 +50,7 @@ int main(int argc, char** argv){
   if (table < 0 || table*32 > 100000){cout<<"tableNum error!";exit(-1);}
 
 
-  FIndex<float> index(dataset, new L2DistanceAVX<float>(), efanna::HAMMINGIndexParams(nCluster, nIter, table));
+  FIndex<float> index(dataset, new DistanceFastL2(), efanna::HAMMINGIndexParams(nCluster, nIter, table));
 
   auto s = std::chrono::high_resolution_clock::now();
 

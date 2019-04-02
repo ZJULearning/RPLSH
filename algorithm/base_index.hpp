@@ -13,7 +13,7 @@ namespace efanna{
 template <typename DataType>
 class InitIndex{
 public:
-	InitIndex(const Matrix<DataType>& features, const Distance<DataType>* d, const IndexParams& params):
+	InitIndex(const Matrix<DataType>& features, const Distance* d, const IndexParams& params):
 		features_(features),
 		distance_(d),
 		params_(params)
@@ -61,7 +61,7 @@ public:
 
 protected:
 	const Matrix<DataType> features_;
-	const Distance<DataType>* distance_;
+	const Distance* distance_;
 	const IndexParams params_;
 	std::vector<std::vector<int> > nn_results;
 };

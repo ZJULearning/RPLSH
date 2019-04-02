@@ -11,7 +11,7 @@ class FIndex{
 public:
 	typedef InitIndex<DataType> IndexType;
 
-	FIndex(const Matrix<DataType>& features, Distance<DataType>* d, const IndexParams& params)
+	FIndex(const Matrix<DataType>& features, Distance* d, const IndexParams& params)
 	: index_params_(params)
 	{
 		init_algorithm init_index_type= params.init_index_type;

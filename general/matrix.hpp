@@ -54,7 +54,7 @@ public:
     }
 
     // Debug usage only
-    std::vector<std::pair<T, size_t> > brute_force_search(size_t idx, size_t k, Distance<T>* distance) const {
+    /*std::vector<std::pair<T, size_t> > brute_force_search(size_t idx, size_t k, Distance<T>* distance) const {
         printf("idx: %lu\n", idx);
         std::vector<std::pair<T, size_t> > result;
         for (size_t i = 0; i < rows_; i++) {
@@ -65,7 +65,7 @@ public:
         std::partial_sort(result.begin(), result.begin() + k, result.end());
         result.resize(k);
         return result;
-    }
+    }*/
 private:
     size_t rows_, cols_;
     std::vector<const T*> row_pointers_;

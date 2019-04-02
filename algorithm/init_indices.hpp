@@ -6,7 +6,7 @@ namespace efanna{
 
 
   template <template<typename> class Index, typename DataType>
-  inline InitIndex<DataType>* create_index_(efanna::Matrix<DataType> data, const efanna::IndexParams& params,  const Distance<DataType>* d)
+  inline InitIndex<DataType>* create_index_(efanna::Matrix<DataType> data, const efanna::IndexParams& params,  const Distance* d)
   {
       return new Index<DataType>(data, d, params);
   }
@@ -14,7 +14,7 @@ namespace efanna{
   template <typename DataType>
   inline InitIndex<DataType>*
   create_index_by_type(const init_algorithm index_type,
-    		const Matrix<DataType>& dataset, const IndexParams& params,  const Distance<DataType>* d)
+    		const Matrix<DataType>& dataset, const IndexParams& params,  const Distance* d)
   {
       InitIndex<DataType>* initIndex = NULL;
       initIndex = create_index_<HAMMINGIndex, DataType>(dataset, params, d);

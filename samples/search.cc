@@ -46,7 +46,7 @@ int main(int argc, char** argv){
   Matrix<float> dataset(points_num,dim,data_load);
   Matrix<float> query(q_num,qdim,query_load);
 
-  FIndex<float> index(dataset, new L2DistanceAVX<float>(), efanna::HAMMINGIndexParams(1000,100,32));
+  FIndex<float> index(dataset, new DistanceL2(), efanna::HAMMINGIndexParams(1000,100,32));
 
   index.loadIndex(argv[1]);
 

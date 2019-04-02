@@ -49,7 +49,7 @@ public:
 	typedef std::vector<Codes> BucketCodes;
 
 
-	HAMMINGIndex(const Matrix<DataType>& dataset, const Distance<DataType>* d, const IndexParams& params = HAMMINGIndexParams(0)) :
+	HAMMINGIndex(const Matrix<DataType>& dataset, const Distance* d, const IndexParams& params = HAMMINGIndexParams(0)) :
 		BaseClass(dataset,d,params)
 	{}
 
@@ -197,6 +197,143 @@ public:
 	  }
 
 	  delete []projection_result;
+	}
+
+	void kmeansPartition_fast(){
+		unsigned nCluster = params_.nGroup;
+
+		unsigned nSmp = features_.get_rows();
+		unsigned mFea = features_.get_cols();
+
+		DistanceFastL2 *dist_ = (DistanceFastL2*)distance_;
+
+		std::vector<unsigned> labelIndexNew(nSmp);
+		std::vector<float> centerDistance(nSmp);
+		std::vector<unsigned> pointNum(nCluster);
+		std::vector<float> centerNorm(nCluster);
+
+		labelIndex.resize(nSmp,0);
+		centers.resize(nCluster);
+		for(unsigned i = 0; i<nCluster; i++){
+			centers[i].resize(mFea,0);
+		}
+
+		unsigned avg = nSmp / nCluster;
+		for(unsigned i = 0; i<nCluster-1; i++){
+			for(unsigned j = i*avg; j<i*avg+avg; j++){
+				for (unsigned k=0; k<mFea; k++){
+					centers[i][k] += features_.get_row(j)[k];
+				}
+			}
+			for (unsigned k=0; k<mFea; k++){
+				centers[i][k] = centers[i][k]/avg;
+			}
+		}
+		for(unsigned j = (nCluster-1)*avg; j<nSmp; j++){
+			for (unsigned k=0; k<mFea; k++){
+				centers[nCluster-1][k] += features_.get_row(j)[k];
+			}
+		}
+		for (unsigned k=0; k<mFea; k++){
+			centers[nCluster-1][k] = centers[nCluster-1][k]/(nSmp-(nCluster-1)*avg+1);
+		}
+
+		for(unsigned i = 0; i<nCluster; i++){
+			centerNorm[i]= dist_->norm(centers[i].data(),mFea);
+		}
+
+
+		unsigned iter=0;
+		bool converged=false;
+		while(iter<params_.nIter && !converged){
+
+			#pragma omp parallel for
+			for(unsigned i = 0; i<nSmp; i++){
+				std::vector<float> dist(nCluster);
+				for(unsigned k=0;k<nCluster;k++){
+					dist[k] = dist_->compare(features_.get_row(i), centers[k].data(), centerNorm[k], mFea);
+				}
+				labelIndexNew[i]=std::min_element(dist.begin(),dist.end())-dist.begin();
+				centerDistance[i] = dist[labelIndexNew[i]];
+			}
+
+			if(iter%10==0){
+				std::cout <<"Iteration " <<iter<<" : "<< std::accumulate(centerDistance.begin(),centerDistance.end(),0.0) <<std::endl;
+			}
+
+
+			unsigned j=0;
+			for(;j<nSmp;j++){
+				if(labelIndex[j] != labelIndexNew[j]) break;
+			}
+			if(j==nSmp){
+				converged = true;
+			}else{
+				iter++;
+
+				for(unsigned i = 0; i<nCluster; i++){
+					std::fill(centers[i].begin(), centers[i].end(), 0);
+				}
+				std::fill(pointNum.begin(), pointNum.end(), 0);
+
+				for(unsigned i = 0; i<nSmp; i++){
+					for (unsigned k=0; k<mFea; k++){
+						centers[labelIndexNew[i]][k] += features_.get_row(i)[k];
+					}
+					pointNum[labelIndexNew[i]] ++;
+				}
+
+				// initialize index
+				std::vector<unsigned> clusterIndex(nCluster);
+				for (size_t i = 0; i < clusterIndex.size(); i++) {
+					clusterIndex[i] = i;
+				}
+				// compare function
+				auto compare_func = [&pointNum](const size_t a, const size_t b)->bool
+						{
+					return pointNum[a] < pointNum[b];
+						};
+				// sort the index by its value
+				std::sort(clusterIndex.begin(), clusterIndex.end(),  compare_func);
+
+				if(pointNum[clusterIndex[0]] == 0){
+					std::cout <<"Empty cluster!"<<std::endl;
+				}
+
+				unsigned j=0;
+				while(pointNum[clusterIndex[j]] == 0){
+					unsigned mv=pointNum[clusterIndex[nCluster-1-j]]/2;
+					unsigned mved=0;
+					for(unsigned i = 0; i<nSmp; i++){
+						if(labelIndexNew[i] == clusterIndex[nCluster-1-j] && mved<mv){
+							for (unsigned k=0; k<mFea; k++){
+								centers[clusterIndex[j]][k] += features_.get_row(i)[k];
+								centers[clusterIndex[nCluster-1-j]][k] -= features_.get_row(i)[k];
+							}
+							pointNum[clusterIndex[j]]++;
+							pointNum[clusterIndex[nCluster-1-j]]--;
+							mved++;
+						}
+					}
+					j++;
+				}
+
+				for(unsigned i = 0; i<nCluster; i++){
+					for (unsigned k=0; k<mFea; k++){
+						centers[i][k] = centers[i][k]/pointNum[i];
+					}
+				}
+				for(unsigned i = 0; i<nCluster; i++){
+					centerNorm[i]= dist_->norm(centers[i].data(),mFea);
+				}
+				labelIndex.swap(labelIndexNew);
+			}
+		}
+
+		std::cout<<"Converged: "<<converged<<std::endl;
+
+
+
 	}
 
 	void kmeansPartition(){
@@ -453,7 +590,7 @@ public:
 		projection_matrix = new float[codelen * dim];
 		generate_random_projection_matrix(dim, codelen, projection_matrix);
 		random_projection(data, points_num, dim, codelen, BaseCode);
-		kmeansPartition();
+		kmeansPartition_fast();
 	}
 
 	void getNeighbors(size_t K, const Matrix<DataType>& query, float* query_){
